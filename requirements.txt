@@ -1,0 +1,5 @@
+youtube_dl
+requests
+json
+bs4
+eyed3
