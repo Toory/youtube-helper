@@ -21,9 +21,12 @@ class Video:
 	def __init__(self, url=''):
 		"""Plays audio from (or searches for) a URL."""
 		self.url = url
-		self.genius_access_token = ''
+		self.genius_access_token = '<your genius access token here>'
 
 	def searchVideo(self,keySearch):
+		'''
+		Downloads the video from a youtube url
+		'''
 
 		ydl_opts = {
 			"default_search": "ytsearch",
@@ -46,7 +49,7 @@ class Video:
 
 	def youtubeToMp3(self):
 		'''
-		Downloads the audio of a youtube url in mp3 format, then embeds title , artist, coverart and lyrics (ID3 metadata)
+		Downloads the audio from a youtube url in mp3 format, then embeds title , artist, coverart and lyrics (ID3 metadata)
 		'''
 
 		try:
@@ -102,7 +105,7 @@ class Video:
 		if title is None or artist is None:
 			track = videoInfo.get('title')
 			tempFile = fileName
-			#changes fileName from artist - title -> track
+			#changes fileName from artist - title -> video title
 			fileName = re.sub(fileName.split('/')[-1].split('.')[0],track,fileName)
 			os.rename(tempFile,fileName)
 			
@@ -211,8 +214,6 @@ class Video:
 			print(f"{f['ext']}\t{f['format']}")
 
 	def streamVideo(self):
-		#t = Thread(target = lambda: os.system('mpv ' + self.url))
-		#t.start()
 		os.system('mpv --loop --window-scale 0.5 ' + self.url)
 		return
 
@@ -220,8 +221,8 @@ if __name__ == '__main__':
 	log = logging.getLogger(__name__)
 	parser = argparse.ArgumentParser()
 	group = parser.add_mutually_exclusive_group()
-	group.add_argument('-v', '--video', help='Downloads the video of a youtube url', action='store', type=str, metavar='URL',nargs=1)
-	group.add_argument('-a', '--audio', help='Downloads the audio of a youtube url in mp3 format (embeds album cover and lyrics)', action='store', type=str, metavar='URL',nargs=1)
+	group.add_argument('-v', '--video', help='Downloads the video from a youtube url', action='store', type=str, metavar='URL',nargs=1)
+	group.add_argument('-a', '--audio', help='Downloads the audio from a youtube url in mp3 format (embeds album cover and lyrics)', action='store', type=str, metavar='URL',nargs=1)
 	group.add_argument('-p', '--play', help='Streams a video from a youtube url (needs mpv installed, only works on linux)', action='store', type=str, metavar='URL',nargs=1)
 	group.add_argument('-s', '--search', help='Searches a youtube url from a keyword', action='store', type=str, metavar='URL',nargs=1)
 
