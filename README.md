@@ -1,2 +1,24 @@
 # youtube-helper
-youtube-helper is a cli tool that helps download videos and audio (embeds ID3 metadata like title,artist,album cover and lyrics) from youtube urls.
+youtube-helper is a command line interface that helps you download videos and audio (mp3 format with embedded ID3 metadata of title,artist,album cover and lyrics) from youtube urls.
+
+## Installation
+
+	git clone 'https://github.com/Toory/youtube-helper'
+	cd youtube-helper/src/
+	virtualenv env
+	source ./env/bin/activate
+	pip install -r requirements.txt #Download all dependencies needed
+	sudo python yt.py
+
+## Usage
+
+	usage: yt.py [-h] [-v URL | -a URL | -p URL | -s URL]
+	
+	Arguments:
+		-h, --help            show this help message and exit
+		-v URL, --video URL   Downloads the video of a youtube url
+		-a URL, --audio URL   Downloads the audio of a youtube url in mp3 format
+		(embeds ID3 metadata of title,artist,album cover and lyrics)
+		-p URL, --play URL    Streams a video from a youtube url 
+		(needs mpv installed, only works on linux)
+		-s URL, --search URL  Searches a youtube url from a keyword
