@@ -8,7 +8,7 @@ youtube-helper is a command line interface that helps you download videos and au
 	virtualenv env
 	source ./env/bin/activate
 	pip install -r requirements.txt #Download all dependencies needed
-	sudo python yt.py
+	python yt.py
 
 ## Usage
 
