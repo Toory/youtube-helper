@@ -12,7 +12,7 @@ import argparse
 import logging
 
 YDL_OPTS = {
-	'outtmpl': '~/Downloads/%(title)s.%(ext)s', 
+	'outtmpl': './%(title)s.%(ext)s', 
 	"quiet": True,
 }
 
@@ -30,7 +30,7 @@ class Video:
 
 		ydl_opts = {
 			"default_search": "ytsearch",
-			'outtmpl': '~/Downloads/%(title)s.%(ext)s', 
+			'outtmpl': './%(title)s.%(ext)s', 
 			"quiet": True,
 			'extractaudio' : False,
 		}
@@ -74,7 +74,7 @@ class Video:
 				'preferredcodec': codec,
 				'preferredquality': quality,
 			}],
-			'outtmpl': '~/Downloads/%(artist)s - %(track)s.%(ext)s', 
+			'outtmpl': './%(artist)s - %(track)s.%(ext)s', 
 			"quiet": False,
 			"extract_flat": "in_playlist",
 			'prefer_ffmpeg': True,
@@ -195,7 +195,7 @@ class Video:
 		'''
 		ydl_opts = {
 			"format": "bestvideo+bestaudio",
-			'outtmpl': '~/Downloads/%(title)s.%(ext)s', 
+			'outtmpl': './%(title)s.%(ext)s', 
 			"quiet": False,
 			'extractaudio' : False,
 		}
