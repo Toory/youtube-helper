@@ -24,3 +24,7 @@ youtube-helper is a command line interface that helps you download videos and au
 		-s URL, --search URL  Searches a youtube url from a keyword
 
 It is necessary, to fetch lyrics, to put your own [genius](https://genius.com/) API access token in the `__init__` function (genius_access_token variable).
+
+## Coming soon
+
+A graphical interface is coming soon! At first will be in the gui branch.
