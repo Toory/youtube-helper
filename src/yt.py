@@ -21,7 +21,10 @@ class Video:
 	def __init__(self, url=''):
 		"""Plays audio from (or searches for) a URL."""
 		self.url = url
-		self.genius_access_token = '<your genius access token here>'
+		# your genius access token here
+		self.genius_access_token = ''
+		# setup debug logger
+		self.log = logging.getLogger(__name__)
 
 	def searchVideo(self,keySearch):
 		'''
@@ -45,7 +48,7 @@ class Video:
 				self.url = yturl
 				return yturl
 		except Exception:
-			log.exception('')
+			self.log.exception('')
 
 	def youtubeToMp3(self):
 		'''
@@ -62,7 +65,7 @@ class Video:
 			self.setData(fileName,artist,title,lyrics,albumArt)
 			self.getData(fileName)
 		except Exception:
-			log.exception('')
+			self.log.exception('')
 
 	def downloadMp3(self,codec='mp3',quality='192'):
 
@@ -137,6 +140,9 @@ class Video:
 		'''
 		Fetches lyrics from genius.com
 		'''
+		if not self.genius_access_token:
+			self.log.exception('Error, genius token not found.')
+			return
 		flag = False
 		# Format a request URI for the Genius API
 		try:
@@ -165,7 +171,7 @@ class Video:
 			return lyrics
 		except Exception:
 			print(f'Couldn\'t find any lyrics for {title}')
-			log.exception('')
+			self.log.exception('')
 
 	def setData(self,file,artist,title,lyrics,album):
 		'''
@@ -204,7 +210,7 @@ class Video:
 			with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 				ydl.download([self.url])
 		except Exception:
-			log.exception('')
+			self.log.exception('')
 		
 	def quality(self):
 		with youtube_dl.YoutubeDL(YDL_OPTS) as ydl:
@@ -217,8 +223,50 @@ class Video:
 		os.system('mpv --loop --window-scale 0.5 ' + self.url)
 		return
 
+	def duration(self):
+		'''
+		Fetches the song length (in seconds)
+		'''
+		try:
+			with youtube_dl.YoutubeDL(YDL_OPTS) as ydl:
+				info = ydl.extract_info(self.url, download=False)
+				duration = info['duration']
+				return duration
+		except Exception:
+			self.log.exception('')
+
+	def fetchStream(self):
+		try:
+			with youtube_dl.YoutubeDL(YDL_OPTS) as ydl:
+				info = ydl.extract_info(self.url, download=False)
+				video_format = info["formats"][0]
+				stream_url = video_format["url"]
+				return stream_url
+		except Exception:
+			self.log.exception('')
+
+	def getInfo(self):
+		with youtube_dl.YoutubeDL(YDL_OPTS) as ydl:
+			info = ydl.extract_info(self.url, download=False)
+			videoInfo = None
+			if "_type" in info and info["_type"] == "playlist":
+				return self.getInfo(info["entries"][0]["url"])  # get info for first video
+			else:
+				videoInfo = info
+			return videoInfo
+
+	def printInfo(self):
+		videoInfo = self.getInfo()
+		artist = videoInfo.get('artist')
+		title = videoInfo.get('track')
+		track = f'{artist} - {title}'
+		print(track)
+		if title is None or artist is None:
+			track = videoInfo.get('title')
+			
+		return track
+
 if __name__ == '__main__':
-	log = logging.getLogger(__name__)
 	parser = argparse.ArgumentParser()
 	group = parser.add_mutually_exclusive_group()
 	group.add_argument('-v', '--video', help='Downloads the video from a youtube url', action='store', type=str, metavar='URL',nargs=1)
