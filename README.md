@@ -25,6 +25,8 @@ youtube-helper is a command line interface that helps you download videos and au
 
 It is necessary, to fetch lyrics, to put your own [genius](https://genius.com/) API access token in the `__init__` function (genius_access_token variable).
 
-## Coming soon
+## Graphical Interface
 
-A graphical interface is coming soon! At first will be in the gui branch.
+A graphical interface is in development on the gui branch.
+
+	https://github.com/Toory/youtube-helper/blob/gui/
