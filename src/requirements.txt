@@ -3,3 +3,6 @@ requests
 json
 bs4
 eyed3
+pyqt5
+asyncio
+asyncqt
