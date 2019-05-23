@@ -39,7 +39,6 @@ class YtMainWindow(QWidget):
 		self.player = QMediaPlayer()
 		self.playlist = QMediaPlaylist()
 		self.userAction = -1  # 0: stopped, 1: playing 2: paused
-		#self.buttonList = ['audioButton', 'mpvButton','videoButton','lyricsButton','playButton','pauseButton','stopButton']
 		self.lastUrl = ''
 		self.streamUrl = ''
 		self.initUI()
@@ -113,7 +112,6 @@ class YtMainWindow(QWidget):
 		layout.addWidget(self.pauseButton,6,1,1,1)
 		layout.addWidget(self.stopButton,6,2,1,1)
 		layout.addWidget(self.volumeslider,7,0,1,2)
-		#layout.addWidget(self.repeatCb,7,1,1,1)
 		layout.addWidget(self.lyricsButton,7,2,1,1)
 		layout.addWidget(self.progressBar,8,0,1,3)
 		self.horizontalGroupBox.setLayout(layout)
@@ -126,7 +124,6 @@ class YtMainWindow(QWidget):
 		self.playButton.clicked.connect(self.playAudio)
 		self.stopButton.clicked.connect(self.stopAudio)
 		self.pauseButton.clicked.connect(self.pauseAudio)
-		#self.repeatCb.stateChanged.connect(self.repeatAudio)
 
 	@asyncClose
 	async def closeEvent(self, event):
@@ -246,54 +243,6 @@ class YtMainWindow(QWidget):
 			self.player.play()
 			self.userAction = 1
 			loop.call_soon_threadsafe(self.startProgressBar)
-
-#	@asyncSlot()
-#	async def repeatAudio(self):
-#		if self.repeatCb.isChecked():
-#			with QThreadExecutor(3) as exec:
-#				url = self.Urlline.text()
-#				if url == '':
-#					self.songName.setText('Error, Enter a youtube url!')
-#					return
-#				video = await loop.run_in_executor(exec, yt.Video,url)
-#				streamUrl = await loop.run_in_executor(exec, video.fetchStream)
-#				duration = await loop.run_in_executor(exec, video.duration)-2
-#				print(streamUrl)
-#			while self.repeatCb.isChecked():
-#				print(self.userAction)
-#				if self.userAction != 1 and self.userAction != 2:
-#					mc = QMediaContent(QUrl(streamUrl))
-#					self.player.setMedia(mc)
-#					self.player.play()
-#					self.userAction = 1
-#					loop.call_soon_threadsafe(self.startProgressBar)
-#				else:
-#					with QThreadExecutor(6) as exec:
-#						await loop.run_in_executor(exec,time.sleep,duration)
-#		else:
-#			loop.call_soon_threadsafe(self.stopAudio)
-
-#	@asyncSlot()
-#	async def repeatAudio(self):
-#		if self.repeatCb.isChecked():
-#			while self.repeatCb.isChecked():
-#				#	print(self.userAction,end='')
-#				if self.userAction != 1 and self.userAction != 2:
-#					loop.call_soon_threadsafe(self.playAudio)
-#				else:
-#					with QThreadExecutor(5) as exec:
-#						await loop.run_in_executor(exec, self.wait_)
-#		else:
-#			loop.call_soon_threadsafe(self.stopAudio)
-
-
-#	def wait_(self,timeout=500, period=0.25):
-#		mustend = time.time() + timeout
-#		while time.time() < mustend:
-#			if self.userAction != 1 and self.userAction != 2:
-#				return True
-#			time.sleep(period)
-#		return False
 
 	@asyncSlot()
 	async def pauseAudio(self):
