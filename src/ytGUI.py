@@ -147,8 +147,9 @@ class YtMainWindow(QWidget):
 				self.Titleline.setText(title)
 			else: # not an url, try to search it on youtube
 				with QThreadExecutor(1) as exec:
+					title = text
 					video = await loop.run_in_executor(exec, yt.Video,'')
-					url = await loop.run_in_executor(exec,video.searchVideo,text)
+					url = await loop.run_in_executor(exec,video.searchVideo,title)
 					self.Urlline.setText(url)
 					self.Titleline.setText(await loop.run_in_executor(exec,video.printInfo))
 			self.infoText.setText(f'Done!\nFound {title}')
