@@ -3,6 +3,7 @@ import youtube_dl
 import requests
 import json
 from bs4 import BeautifulSoup
+import random
 from urllib.parse import quote
 from urllib.request import urlopen, Request
 import os
@@ -40,11 +41,9 @@ class Video:
 
 		try:
 			with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-				print(keySearch)
 				video = ydl.extract_info(f'ytsearch:{keySearch}',download=False)
 				tempUrl = video['entries'][0]['id']
 				yturl = 'https://www.youtube.com/watch?v=' + str(tempUrl)
-				print(yturl)
 				self.url = yturl
 				return yturl
 		except Exception:
@@ -147,7 +146,6 @@ class Video:
 		# Format a request URI for the Genius API
 		try:
 			search_term = str(title).lower().split('lyrics',1)[0].split('official',1)[0].split('audio',1)[0].replace('(','').replace(')','').replace('[','').replace(']','')
-			#print(search_term)
 			url = f"https://api.genius.com/search?q={search_term}&access_token={self.genius_access_token}"
 			response = requests.get(url)
 			json_obj = response.json()
@@ -260,11 +258,23 @@ class Video:
 		artist = videoInfo.get('artist')
 		title = videoInfo.get('track')
 		track = f'{artist} - {title}'
-		print(track)
 		if title is None or artist is None:
 			track = videoInfo.get('title')
 			
 		return track
+
+	def discover(self):
+		it_daily = 'https://kworb.net/spotify/country/it_daily.html'
+		it_weekly = 'https://kworb.net/spotify/country/it_daily.html'
+		global_daily = 'https://kworb.net/spotify/country/global_daily.html'
+		global_weekly = 'https://kworb.net/spotify/country/global_weekly.html'
+
+		page = requests.get(global_weekly)
+		html = page.text
+		soup = BeautifulSoup(html,'html.parser')
+		songs = soup.find_all('td', attrs={'class': 'text mp'})
+		song = songs[random.randint(0,len(songs)-1)].text
+		return song
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
