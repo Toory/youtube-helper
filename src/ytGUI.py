@@ -35,12 +35,12 @@ class YtMainWindow(QWidget):
 	def __init__(self, parent):
 		super(YtMainWindow,self).__init__(parent)
 		self._SESSION_TIMEOUT = 1.
-		self.title = 'Youtube Helper'
 		self.player = QMediaPlayer()
 		self.playlist = QMediaPlaylist()
 		self.userAction = -1  # 0: stopped, 1: playing 2: paused
 		self.lastUrl = ''
 		self.streamUrl = ''
+		self.maxWorkers = 4
 		self.initUI()
 
 	def initUI(self):
@@ -48,7 +48,7 @@ class YtMainWindow(QWidget):
 		windowLayout = QVBoxLayout()
 		windowLayout.addWidget(self.horizontalGroupBox)
 		self.setLayout(windowLayout)
-		self.startSession()
+		loop.call_soon_threadsafe(self.startSession)
 		self.show()
 
 	@asyncSlot()
@@ -68,21 +68,24 @@ class YtMainWindow(QWidget):
 		self.Titlelabel.setAlignment(Qt.AlignCenter)
 		self.Titleline = QLineEdit()
 		self.infoText = QTextEdit()
-		self.audioButton = QPushButton('Download audio!',self)
-		self.mpvButton = QPushButton('Stream with mpv',self)
-		self.videoButton = QPushButton('Download video!',self)
-		self.urlButton = QPushButton('Find..',self)
-		self.lyricsButton = QPushButton('Get lyrics',self)
-		self.playButton = QPushButton('Play audio',self)
-		self.pauseButton = QPushButton('Pause audio',self)
-		self.stopButton = QPushButton('Stop audio',self)
+		self.audioButton = QPushButton('Download audio')
+		self.mpvButton = QPushButton('Stream with mpv')
+		self.videoButton = QPushButton('Download video')
+		self.urlButton = QPushButton('Find..')
+		self.lyricsButton = QPushButton('Get lyrics')
+		self.playButton = QPushButton('Play')
+		self.pauseButton = QPushButton('Pause')
+		self.stopButton = QPushButton('Stop')
+		self.discoverButton = QPushButton('Discover Music')
 		self.progressBar = QProgressBar()
 		self.progressBar.setFormat(f'00:00 : 00:00 | 00%')
 		self.progressBar.setMaximum(100)
 		self.volumeslider = QSlider(Qt.Horizontal, self)
 		self.volumeslider.setFocusPolicy(Qt.NoFocus)
-		self.volumeslider.valueChanged[int].connect(self.changeVolume)
 		self.volumeslider.setValue(50)
+		self.volumelabel = QLabel('50')
+		self.volumeslider.valueChanged[int].connect(self.changeVolume)
+		self.volumeslider.valueChanged.connect(self.volumelabel.setNum)
 		self.songName = QLabel('-')
 		self.songName.setAlignment(Qt.AlignCenter)
 		# Disable buttons before fetch
@@ -111,9 +114,11 @@ class YtMainWindow(QWidget):
 		layout.addWidget(self.playButton,6,0,1,1)
 		layout.addWidget(self.pauseButton,6,1,1,1)
 		layout.addWidget(self.stopButton,6,2,1,1)
-		layout.addWidget(self.volumeslider,7,0,1,2)
-		layout.addWidget(self.lyricsButton,7,2,1,1)
-		layout.addWidget(self.progressBar,8,0,1,3)
+		layout.addWidget(self.volumeslider,8,0,1,3)
+		layout.addWidget(self.volumelabel,7,0,1,1)
+		layout.addWidget(self.lyricsButton,7,1,1,1)
+		layout.addWidget(self.discoverButton,7,2,1,1)
+		layout.addWidget(self.progressBar,9,0,1,3)
 		self.horizontalGroupBox.setLayout(layout)
 
 		self.urlButton.clicked.connect(self.fetch)
@@ -124,6 +129,7 @@ class YtMainWindow(QWidget):
 		self.playButton.clicked.connect(self.playAudio)
 		self.stopButton.clicked.connect(self.stopAudio)
 		self.pauseButton.clicked.connect(self.pauseAudio)
+		self.discoverButton.clicked.connect(self.discover)
 
 	@asyncClose
 	async def closeEvent(self, event):
@@ -136,7 +142,8 @@ class YtMainWindow(QWidget):
 		self.infoText.setText('Loading...')
 
 		if not text:
-			self.songName.setText('Error, box is empty!!')
+			self.infoText.setText('Error, box is empty!!')
+			self.urlButton.setEnabled(True)
 			return
 		try:
 			if 'https' in text or '.com' in text: # means it's a url
@@ -153,6 +160,7 @@ class YtMainWindow(QWidget):
 					self.Urlline.setText(url)
 					self.Titleline.setText(await loop.run_in_executor(exec,video.printInfo))
 			self.infoText.setText(f'Done!\nFound {title}')
+			print(title)
 		except Exception as e:
 			print(e)
 		finally:
@@ -171,7 +179,7 @@ class YtMainWindow(QWidget):
 		url = self.Urlline.text()
 
 		if url == '':
-			self.songName.setText('Error, Enter a youtube url!')
+			self.infoText.setText('Error, Enter a youtube url!')
 			return
 		try:
 			with QThreadExecutor(1) as exec:
@@ -202,7 +210,7 @@ class YtMainWindow(QWidget):
 		url = self.Urlline.text()
 
 		if url == '':
-			self.songName.setText('Error, Enter a youtube url!')
+			self.infoText.setText('Error, Enter a youtube url!')
 			return
 		try:
 			with QThreadExecutor(1) as exec:
@@ -217,9 +225,9 @@ class YtMainWindow(QWidget):
 	async def getLyrics(self):
 		title = self.Titleline.text()
 		if title == '':
-			self.songName.setText('Error, Enter a title!')
+			self.infoText.setText('Error, Enter a title!')
 			return
-		with QThreadExecutor(2) as exec:
+		with QThreadExecutor(1) as exec:
 			video = await loop.run_in_executor(exec, yt.Video,'')
 			lyrics = await loop.run_in_executor(exec, video.getLyrics,title)
 		self.infoText.setText(lyrics)
@@ -231,9 +239,10 @@ class YtMainWindow(QWidget):
 			loop.call_soon_threadsafe(self.stopAudio)
 		url = self.Urlline.text()
 		if url == '':
-			self.songName.setText('Error, Enter a youtube url!')
+			self.infoText.setText('Error, Enter a youtube url!')
 			return
-		with QThreadExecutor(3) as exec:
+		print('Playing: ', url)
+		with QThreadExecutor(1) as exec:
 			# if last song was the same there is no need to fetch streamUrl again
 			if self.lastUrl != url:
 				video = await loop.run_in_executor(exec, yt.Video,url)
@@ -244,6 +253,25 @@ class YtMainWindow(QWidget):
 			self.player.play()
 			self.userAction = 1
 			loop.call_soon_threadsafe(self.startProgressBar)
+
+	@asyncSlot()
+	async def discover(self):
+		with QThreadExecutor(1) as exec:
+			video = await loop.run_in_executor(exec, yt.Video)
+			songTitle = await loop.run_in_executor(exec, video.discover)
+			self.linedit.setText(songTitle)
+		loop.call_soon_threadsafe(self.fetch)
+		#wait for self.fetch to terminate
+		await asyncio.sleep(3)
+		loop.call_soon_threadsafe(self.playAudio)
+
+	def wait_(self,timeout=500, period=0.25):
+		mustend = time.time() + timeout
+		while time.time() < mustend:
+			if self.userAction == 0:
+				return True
+			time.sleep(period)
+		return False
 
 	@asyncSlot()
 	async def pauseAudio(self):
@@ -266,10 +294,12 @@ class YtMainWindow(QWidget):
 	async def startProgressBar(self):
 		self.progressBar.setValue(0)
 		url = self.Urlline.text()
-		with QThreadExecutor(4) as exec:
+		with QThreadExecutor(1) as exec:
 			video = await loop.run_in_executor(exec, yt.Video,url)
 			duration = await loop.run_in_executor(exec, video.duration)-1
 			await loop.run_in_executor(exec,self.progress,duration)
+			self.progressBar.setValue(0)
+			self.progressBar.setFormat(f'00:00 : 00:00 | 00%')
 
 	def progress(self,duration):
 		count = 0
