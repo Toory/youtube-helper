@@ -265,14 +265,6 @@ class YtMainWindow(QWidget):
 		await asyncio.sleep(3)
 		loop.call_soon_threadsafe(self.playAudio)
 
-	def wait_(self,timeout=500, period=0.25):
-		mustend = time.time() + timeout
-		while time.time() < mustend:
-			if self.userAction == 0:
-				return True
-			time.sleep(period)
-		return False
-
 	@asyncSlot()
 	async def pauseAudio(self):
 		if self.userAction == 2:
